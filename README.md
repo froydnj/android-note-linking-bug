@@ -262,5 +262,5 @@ Program Headers:
 ```
 
 Note how the `.note.*` sections with differing alignments have wound up
-in differnt segments, each with appropriate alignments.  `strip` works
+in different segments, each with appropriate alignments.  `strip` works
 correctly on a `ld.bfd`-produced library.
