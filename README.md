@@ -177,7 +177,7 @@ The `NOTE` program header is still not aligned correctly, the
 in-memory size is smaller than the on-disk size, which causes other
 tools to fail consistency checks.
 
-### binutils ld
+### binutils ld works
 
 In contrast, using binutils ld:
 
@@ -264,3 +264,85 @@ Program Headers:
 Note how the `.note.*` sections with differing alignments have wound up
 in different segments, each with appropriate alignments.  `strip` works
 correctly on a `ld.bfd`-produced library.
+
+### ld.lld works
+
+LLD support is not included in this standalone testcase, but modifying
+the script slightly to use LLD produces a binary that looks like:
+
+```
+There are 32 section headers, starting at offset 0x2e38:
+
+Section Headers:
+  [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            0000000000000000 000000 000000 00      0   0  0
+  [ 1] .interp           PROGBITS        0000000000000270 000270 000015 00   A  0   0  1
+  [ 2] .dynsym           DYNSYM          0000000000000288 000288 0000f0 18   A  6   1  8
+  [ 3] .gnu.version      VERSYM          0000000000000378 000378 000014 02   A  2   0  2
+  [ 4] .gnu.version_r    VERNEED         000000000000038c 00038c 000040 00   A  6   2  4
+  [ 5] .hash             HASH            00000000000003cc 0003cc 000058 04   A  2   0  4
+  [ 6] .dynstr           STRTAB          0000000000000424 000424 000090 00   A  0   0  1
+  [ 7] .rela.plt         RELA            00000000000004b8 0004b8 000090 18   A  2  20  8
+  [ 8] .note.android.ident NOTE            0000000000000548 000548 000098 00   A  0   0  2
+  [ 9] .note.gnu.build-id NOTE            00000000000005e0 0005e0 000024 00   A  0   0  4
+  [10] .rodata           PROGBITS        0000000000000604 000604 000070 01 AMS  0   0  1
+  [11] .eh_frame_hdr     PROGBITS        0000000000000674 000674 00002c 00   A  0   0  4
+  [12] .eh_frame         PROGBITS        00000000000006a0 0006a0 000094 00   A  0   0  8
+  [13] .text             PROGBITS        0000000000001000 001000 0000f9 00  AX  0   0 16
+  [14] .plt              PROGBITS        0000000000001100 001100 000070 00  AX  0   0 16
+  [15] .data             PROGBITS        0000000000002000 002000 000000 00  WA  0   0  1
+  [16] .fini_array       FINI_ARRAY      0000000000002000 002000 000010 08  WA  0   0  8
+  [17] .init_array       INIT_ARRAY      0000000000002010 002010 000010 08  WA  0   0  8
+  [18] .preinit_array    PREINIT_ARRAY   0000000000002020 002020 000010 08  WA  0   0  8
+  [19] .dynamic          DYNAMIC         0000000000002030 002030 0001b0 10  WA  6   0  8
+  [20] .got.plt          PROGBITS        00000000000021e0 0021e0 000048 00  WA  0   0  8
+  [21] .bss              NOBITS          0000000000003000 002228 000008 00  WA  0   0  8
+  [22] .comment          PROGBITS        0000000000000000 002228 0000a9 01  MS  0   0  1
+  [23] .debug_str        PROGBITS        0000000000000000 0022d1 0001b6 01  MS  0   0  1
+  [24] .debug_loc        PROGBITS        0000000000000000 002487 0000eb 00      0   0  1
+  [25] .debug_abbrev     PROGBITS        0000000000000000 002572 0000aa 00      0   0  1
+  [26] .debug_info       PROGBITS        0000000000000000 00261c 000121 00      0   0  1
+  [27] .debug_macinfo    PROGBITS        0000000000000000 00273d 000001 00      0   0  1
+  [28] .debug_line       PROGBITS        0000000000000000 00273e 000169 00      0   0  1
+  [29] .symtab           SYMTAB          0000000000000000 0028a8 0002d0 18     31  17  8
+  [30] .shstrtab         STRTAB          0000000000000000 002b78 000149 00      0   0  1
+  [31] .strtab           STRTAB          0000000000000000 002cc1 000173 00      0   0  1
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings), l (large)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+Elf file type is DYN (Shared object file)
+Entry point 0x1000
+There are 10 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+  PHDR           0x000040 0x0000000000000040 0x0000000000000040 0x000230 0x000230 R   0x8
+  INTERP         0x000270 0x0000000000000270 0x0000000000000270 0x000015 0x000015 R   0x1
+      [Requesting program interpreter: /system/bin/linker64]
+  LOAD           0x000000 0x0000000000000000 0x0000000000000000 0x000734 0x000734 R   0x1000
+  LOAD           0x001000 0x0000000000001000 0x0000000000001000 0x000170 0x000170 R E 0x1000
+  LOAD           0x002000 0x0000000000002000 0x0000000000002000 0x000228 0x001008 RW  0x1000
+  DYNAMIC        0x002030 0x0000000000002030 0x0000000000002030 0x0001b0 0x0001b0 RW  0x8
+  GNU_RELRO      0x002000 0x0000000000002000 0x0000000000002000 0x000228 0x001000 R   0x1
+  GNU_EH_FRAME   0x000674 0x0000000000000674 0x0000000000000674 0x00002c 0x00002c R   0x4
+  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0
+  NOTE           0x000548 0x0000000000000548 0x0000000000000548 0x0000bc 0x0000bc R   0x4
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     
+   01     .interp 
+   02     .interp .dynsym .gnu.version .gnu.version_r .hash .dynstr .rela.plt .note.android.ident .note.gnu.build-id .rodata .eh_frame_hdr .eh_frame 
+   03     .text .plt 
+   04     .data .fini_array .init_array .preinit_array .dynamic .got.plt .bss 
+   05     .dynamic 
+   06     .data .fini_array .init_array .preinit_array .dynamic .got.plt 
+   07     .eh_frame_hdr 
+   08     
+   09     .note.android.ident .note.gnu.build-id
+```
+
+The `NOTE` program header *is* correctly aligned and takes up the
+minimum amount of space.  `strip` has no issues with this binary.
